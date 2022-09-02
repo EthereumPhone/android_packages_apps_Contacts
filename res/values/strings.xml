@@ -19,6 +19,8 @@
          that don't specify a label. -->
     <string name="applicationLabel">Contacts</string>
 
+    <string name="ethAddress">Ethereum Address</string>
+
     <!-- Directory partition name -->
     <string name="contactsList">Contacts</string>
 
