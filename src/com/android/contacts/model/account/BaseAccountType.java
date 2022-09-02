@@ -205,7 +205,7 @@ public abstract class BaseAccountType extends AccountType {
             kind.fieldList.add(new EditField(StructuredName.FAMILY_NAME, R.string.name_family,
                     FLAGS_PERSON_NAME).setPhoneticsColumn(StructuredName.PHONETIC_FAMILY_NAME));
         }
-        kind.fieldList.add(new EditField("eth", "0x0"));
+        kind.fieldList.add(new EditField("eth", R.string.ethAddress));
         kind.fieldList.add(new EditField(StructuredName.SUFFIX, R.string.name_suffix,
                 FLAGS_PERSON_NAME).setOptional(true));
 
@@ -969,7 +969,7 @@ public abstract class BaseAccountType extends AccountType {
                 kn.fieldList.add(new EditField(StructuredName.FAMILY_NAME, R.string.name_family,
                         FLAGS_PERSON_NAME));
             }
-            kind.fieldList.add(new EditField("eth", "0x0"));
+            kind.fieldList.add(new EditField("eth", R.string.ethAddress));
             kn.fieldList.add(new EditField(StructuredName.SUFFIX, R.string.name_suffix,
                     FLAGS_PERSON_NAME).setOptional(true));
 
