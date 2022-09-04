@@ -83,6 +83,9 @@ public abstract class BaseAccountType extends AccountType {
     protected static final int FLAGS_RELATION = EditorInfo.TYPE_CLASS_TEXT
             | EditorInfo.TYPE_TEXT_FLAG_CAP_WORDS | EditorInfo.TYPE_TEXT_VARIATION_PERSON_NAME;
 
+    // Eth-Address Flags
+    protected static final int FLAGS_ETH_ADD = EditorInfo.TYPE_CLASS_TEXT;
+
     // Specify the maximum number of lines that can be used to display various field types.  If no
     // value is specified for a particular type, we use the default value from {@link DataKind}.
     protected static final int MAX_LINES_FOR_POSTAL_ADDRESS = 10;
@@ -205,9 +208,20 @@ public abstract class BaseAccountType extends AccountType {
             kind.fieldList.add(new EditField(StructuredName.FAMILY_NAME, R.string.name_family,
                     FLAGS_PERSON_NAME).setPhoneticsColumn(StructuredName.PHONETIC_FAMILY_NAME));
         }
-        kind.fieldList.add(new EditField("eth", R.string.ethAddress));
+        kind.fieldList.add(new EditField("data15", R.string.ethAddress, FLAGS_ETH_ADD));
         kind.fieldList.add(new EditField(StructuredName.SUFFIX, R.string.name_suffix,
                 FLAGS_PERSON_NAME).setOptional(true));
+
+        return kind;
+    }
+
+    protected DataKind addDataKindEth(Context context) throws DefinitionException {
+        final DataKind kind = addKind(new DataKind("eth",
+                R.string.ethAddressLabel, Weight.NONE, true));
+        kind.actionHeader = new SimpleInflater(R.string.nameLabelsGroup);
+        kind.actionBody = new SimpleInflater("data15");
+        kind.fieldList = Lists.newArrayList();
+        kind.fieldList.add(new EditField("data15", R.string.ethAddress, FLAGS_ETH_ADD));
 
         return kind;
     }
@@ -969,7 +983,7 @@ public abstract class BaseAccountType extends AccountType {
                 kn.fieldList.add(new EditField(StructuredName.FAMILY_NAME, R.string.name_family,
                         FLAGS_PERSON_NAME));
             }
-            kn.fieldList.add(new EditField("eth", R.string.ethAddress));
+            kn.fieldList.add(new EditField("data15", R.string.ethAddress, FLAGS_ETH_ADD));
             kn.fieldList.add(new EditField(StructuredName.SUFFIX, R.string.name_suffix,
                     FLAGS_PERSON_NAME).setOptional(true));
 

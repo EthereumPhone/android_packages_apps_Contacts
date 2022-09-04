@@ -21,6 +21,8 @@
 
     <string name="ethAddress">Ethereum Address</string>
 
+    <string name="ethAddressLabel">Ethereum-Address</string>
+
     <!-- Directory partition name -->
     <string name="contactsList">Contacts</string>
 

@@ -47,6 +47,7 @@ public class FallbackAccountType extends BaseAccountType {
         try {
             addDataKindStructuredName(context);
             addDataKindName(context);
+            addDataKindEth(context);
             addDataKindPhoneticName(context);
             addDataKindNickname(context);
             addDataKindPhone(context);
