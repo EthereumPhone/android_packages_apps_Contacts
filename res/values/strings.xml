@@ -19,9 +19,9 @@
          that don't specify a label. -->
     <string name="applicationLabel">Contacts</string>
 
-    <string name="ethAddress">Ethereum Address</string>
+    <string name="ethAddress">Ethereum Address / ENS</string>
 
-    <string name="ethAddressLabel">Ethereum-Address</string>
+    <string name="ethAddressLabel">Ethereum-Address / ENS</string>
 
     <!-- Directory partition name -->
     <string name="contactsList">Contacts</string>
