@@ -32,6 +32,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import com.android.contacts.activities.ContactEditorActivity;
 
 import com.android.contacts.R;
 import com.android.contacts.compat.ProviderStatusCompat;
@@ -131,9 +132,12 @@ public class ContactsUnavailableFragment extends Fragment implements OnClickList
     public void onClick(View v) {
         final int id = v.getId();
         if (id == R.id.add_account_button) {
-            final Intent intent = ImplicitIntentsUtil.getIntentForAddingGoogleAccount();
-            ImplicitIntentsUtil.startActivityOutsideApp(getActivity(), intent);
-
+            //final Intent intent = ImplicitIntentsUtil.getIntentForAddingGoogleAccount();
+            //ImplicitIntentsUtil.startActivityOutsideApp(getActivity(), intent);
+            Intent intent = new Intent(getContext(), ContactEditorActivity.class);
+            // Set intent action to INSERT_NEW
+            intent.setAction(Intent.ACTION_INSERT);
+            startActivity(intent);
         } else if (id == R.id.import_contacts_button) {
             ImportDialogFragment.show(getFragmentManager());
 

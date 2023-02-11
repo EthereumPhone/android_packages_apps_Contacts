@@ -29,6 +29,7 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.content.Context;
 
 import com.android.contacts.R;
 import com.android.contacts.editor.ContactEditorUtils;
@@ -68,12 +69,13 @@ public class ContactEditorAccountsChangedActivity extends Activity
     };
 
     private final OnClickListener mAddAccountClickListener = new OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            final Intent intent = ImplicitIntentsUtil.getIntentForAddingGoogleAccount();
-            startActivityForResult(intent, SUBACTIVITY_ADD_NEW_ACCOUNT);
-        }
-    };
+                @Override
+                public void onClick(View v) {
+                    final Intent intent = ImplicitIntentsUtil.getIntentForAddingGoogleAccount();
+                    startActivityForResult(intent, SUBACTIVITY_ADD_NEW_ACCOUNT);
+                }
+            };
+        
 
     @Override
     protected void onResume() {
@@ -134,8 +136,18 @@ public class ContactEditorAccountsChangedActivity extends Activity
             textView.setText(getString(R.string.contact_editor_prompt_multiple_accounts));
 
             final Button button = (Button) view.findViewById(R.id.add_account_button);
-            button.setText(getString(R.string.add_new_account));
-            button.setOnClickListener(mAddAccountClickListener);
+            button.setText(getString(R.string.shortcut_add_contact));
+            final Context context = getApplicationContext();
+            OnClickListener mAddAccountClickListener2 = new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    // Launch the ContactEditorActivity activity
+                    Intent intent = new Intent(context, ContactEditorActivity.class);
+                    intent.setAction(Intent.ACTION_INSERT);
+                    context.startActivity(intent);
+                }
+            };
+            button.setOnClickListener(mAddAccountClickListener2);
 
             final ListView accountListView = (ListView) view.findViewById(R.id.account_list);
             mAccountListAdapter = new AccountsListAdapter(this, accounts);
