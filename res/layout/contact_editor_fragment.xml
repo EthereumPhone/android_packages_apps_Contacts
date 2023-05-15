@@ -44,6 +44,18 @@
                 android:layout_height="0dp"
                 android:focusable="true"
                 android:focusableInTouchMode="true"/>
+            
+            <Button
+                android:id="@+id/qr_code_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:layout_marginEnd="16dp"
+                android:layout_marginTop="16dp"
+                android:text="Scan Ethereum QR Code"
+                android:textColor="@color/primary_color"
+                android:textStyle="bold" />
+
 
             <include layout="@layout/editor_account_header" />
 

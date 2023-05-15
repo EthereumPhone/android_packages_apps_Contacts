@@ -28,6 +28,28 @@ import androidx.appcompat.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
+import com.google.zxing.integration.android.IntentIntegrator;
+import com.google.zxing.integration.android.IntentResult;
+import android.content.ContentResolver;
+import android.provider.ContactsContract.Data;
+import android.content.Context;
+import android.app.Activity;
+import android.os.StrictMode;
+import android.widget.LinearLayout;
+import android.widget.EditText;
+import com.android.contacts.editor.StructuredNameEditorView;
+import com.android.contacts.editor.KindSectionView;
+import android.text.Editable;
+import android.text.TextWatcher;
+
+import org.json.JSONObject;
+import org.kethereum.eip137.model.ENSName;
+import org.kethereum.ens.ENS;
+import org.kethereum.rpc.EthereumRPC;
+import org.kethereum.rpc.HttpEthereumRPC;
+import android.view.ViewGroup;
+import okhttp3.*;
 
 import com.android.contacts.AppCompatContactsActivity;
 import com.android.contacts.ContactSaveService;
@@ -43,7 +65,11 @@ import com.android.contacts.util.DialogManager;
 import com.android.contacts.util.ImplicitIntentsUtil;
 
 import java.io.FileNotFoundException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * Contact editor with only the most important fields displayed initially.
@@ -355,6 +381,20 @@ public class ContactEditorActivity extends AppCompatContactsActivity implements
         // Set activity title for Talkback
         setTitle(mActionBarTitleResId);
 
+        Button qrCodeButton = findViewById(R.id.qr_code_button);
+        final Context context = this;
+        qrCodeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                IntentIntegrator integrator = new IntentIntegrator((Activity) context);
+                integrator.setPrompt("Scan an ethereum address QR code");
+                integrator.setOrientationLocked(false);
+                integrator.setBeepEnabled(false);
+                integrator.initiateScan();
+            }
+        });
+
+
         mFragment =
             (ContactEditor) getFragmentManager().findFragmentById(R.id.contact_editor_fragment);
 
@@ -377,7 +417,170 @@ public class ContactEditorActivity extends AppCompatContactsActivity implements
         if (Intent.ACTION_INSERT.equals(action)) {
             DynamicShortcuts.reportShortcutUsed(this, DynamicShortcuts.SHORTCUT_ADD_CONTACT);
         }
+
+
+        Runnable run = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                System.out.println("Looking for ethAddress EditText");
+                EditText editText = findEditTextByHint(findViewById(R.id.kind_editors), getString(R.string.ethAddress));
+                if (editText != null) {
+                    System.out.println("Found ethAddress EditText");
+                    editText.addTextChangedListener(new TextWatcher() {
+
+                        public void afterTextChanged(Editable s) {
+                            // Check if the text is an ENS domain
+                            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+
+                            StrictMode.setThreadPolicy(policy);
+
+                            String text = s.toString();
+                            text = text.replace(" ", "").toLowerCase();
+                            try {
+                                if (text.endsWith(".eth")) {
+                                    // Send https request to https://ensdata.net/ENS, where "ENS" is the ENS domain
+                                    // Get the response and set the text to the response
+                                    String url = "https://ensdata.net/" + text;
+                                    System.out.println("Sending request to " + url);
+                                    OkHttpClient client = new OkHttpClient();
+                                    Request request = new Request.Builder()
+                                            .url(url)
+                                            .build();
+                                    Response response = client.newCall(request).execute();
+                                    String responseText = response.body().string();
+                                    System.out.println("Response: " + responseText);
+                                    JSONObject jsonObject = new JSONObject(responseText);
+                                    if (jsonObject.has("email")) {
+                                        findEditTextByHint(findViewById(R.id.kind_section_views), getString(R.string.emailLabelsGroup)).setText(jsonObject.getString("email"));
+                                    }
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                System.out.println("Error: " + e.getMessage());
+                            }
+                        }
+
+                        public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+                        public void onTextChanged(CharSequence s, int start, int before, int count) {}
+                    });
+                } else {
+                    System.out.println("Did not find ethAddress EditText");
+                    // Make a loop to check if the editText content is changed
+                    /*
+                    while (true) {
+                        System.out.println("TRYING TO GET THE TEXT");
+                        try {
+                            Thread.sleep(100);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        String text = editText.getText().toString();
+                        text = text.replace(" ", "").toLowerCase();
+                        System.out.println("Checking text: " + text);
+                        try {
+                            if (text.endsWith(".eth")) {
+                                ENS ens = new ENS(new HttpEthereumRPC("https://cloudflare-eth.com", null), null);
+                                System.out.println("Checking ENS domain: " + Class.forName("org.kethereum.eip137.model.ENSName").getDeclaredMethods());
+                                //ENSName name = new ENSName(text);
+                                //String email = ens.getEmail(name);
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            System.out.println("Error: " + e.getMessage());
+                        }
+                    }
+
+                     */
+                }
+            }
+        };
+
+        new Thread(run).start();
+
+        /*
+        // Add ontext listener
+        LinearLayout mKindSectionViews = findViewById(R.id.kind_section_views);
+        final int childCount = mKindSectionViews.getChildCount();
+        // Recursively Check all children if it is a EditText, and if the hint is R.id.ethAddress
+
+        for (int i = 0; i < childCount; i++) {
+            View child = mKindSectionViews.getChildAt(i);
+            // Also check all children of the child
+            if (child instanceof LinearLayout) {
+                LinearLayout editors = ((LinearLayout) child).findViewById(R.id.editors);
+                if (editors != null) {
+                    final int childCount3 = editors.getChildCount();
+                    for (int k = 0; k < childCount3; k++) {
+                        View child3 = editors.getChildAt(k);
+                        if (child3 instanceof EditText) {
+                            EditText editText = (EditText) child3;
+                            if (editText.getHint().equals(getString(R.string.ethAddress))) {
+                                editText.addTextChangedListener(new TextWatcher() {
+
+                                    public void afterTextChanged(Editable s) {
+                                        // Check if the text is an ENS domain
+                                        String text = s.toString();
+                                        text = text.replace(" ", "").toLowerCase();
+                                        try {
+                                            if (text.endsWith(".eth")) {
+                                                ENS ens = new ENS(new HttpEthereumRPC("https://cloudflare-eth.com", null), null);
+                                                System.out.println("Checking ENS domain: " + Class.forName("org.kethereum.eip137.model.ENSName").getDeclaredMethods());
+                                                //ENSName name = new ENSName(text);
+                                                //String email = ens.getEmail(name);
+                                            }
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                            System.out.println("Error: " + e.getMessage());
+                                        }
+                                    }
+                        
+                                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+                        
+                                    public void onTextChanged(CharSequence s, int start, int before, int count) {}
+                                });
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+         */
     }
+
+    public EditText findEditTextByHint(View view, String searchHint) {
+        if (view instanceof ViewGroup) {
+            ViewGroup viewGroup = (ViewGroup) view;
+
+            for (int i = 0; i < viewGroup.getChildCount(); i++) {
+                View childView = viewGroup.getChildAt(i);
+                EditText editText = findEditTextByHint(childView, searchHint);
+
+                if (editText != null) {
+                    // Found the EditText with the search hint
+                    return editText;
+                }
+            }
+        } else if (view instanceof EditText) {
+            EditText editText = (EditText) view;
+
+            if (editText.getHint().toString().equals(searchHint)) {
+                // Found the EditText with the search hint
+                return editText;
+            }
+        }
+
+        // EditText with the search hint not found in this view or its children
+        return null;
+    }
+
 
     @Override
     protected void onNewIntent(Intent intent) {
@@ -427,14 +630,108 @@ public class ContactEditorActivity extends AppCompatContactsActivity implements
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (mPhotoSelectionHandler == null) {
-            mPhotoSelectionHandler = (EditorPhotoSelectionHandler) getPhotoSelectionHandler();
-        }
-        if (mPhotoSelectionHandler.handlePhotoActivityResult(requestCode, resultCode, data)) {
-            return;
+        if (requestCode == IntentIntegrator.REQUEST_CODE && resultCode == RESULT_OK) {
+            IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
+            if (result != null && result.getContents() != null) {
+                String qrCodeResult = result.getContents();
+                if (qrCodeResult.startsWith("ethereum:")) {
+                    qrCodeResult = qrCodeResult.substring(9);
+                    if (qrCodeResult.contains("@")) {
+                        qrCodeResult = qrCodeResult.split("@")[0];
+                    }
+                }
+                // Use the qrCodeResult as needed
+                LinearLayout mKindSectionViews = findViewById(R.id.kind_section_views);
+                final int childCount = mKindSectionViews.getChildCount();
+                // Recursively Check all children if it is a EditText, and if the hint is R.id.ethAddress
+                for (int i = 0; i < childCount; i++) {
+                    View child = mKindSectionViews.getChildAt(i);
+                    // Also check all children of the child
+                    if (child instanceof LinearLayout) {
+                        LinearLayout editors = ((LinearLayout) child).findViewById(R.id.editors);
+                        if (editors != null) {
+                            final int childCount3 = editors.getChildCount();
+                            for (int k = 0; k < childCount3; k++) {
+                                View child3 = editors.getChildAt(k);
+                                if (child3 instanceof EditText) {
+                                    EditText editText = (EditText) child3;
+                                    if (editText.getHint().equals(getString(R.string.ethAddress))) {
+                                        editText.setText(qrCodeResult);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+            }
+        } else {
+            if (mPhotoSelectionHandler == null) {
+                mPhotoSelectionHandler = (EditorPhotoSelectionHandler) getPhotoSelectionHandler();
+            }
+            if (mPhotoSelectionHandler.handlePhotoActivityResult(requestCode, resultCode, data)) {
+                return;
+            }
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
+
+    public void changeTextOfEntity(String newText, String hint) {
+        LinearLayout mKindSectionViews = findViewById(R.id.kind_section_views);
+        final int childCount = mKindSectionViews.getChildCount();
+        // Recursively Check all children if it is a EditText, and if the hint is R.id.ethAddress
+        for (int i = 0; i < childCount; i++) {
+            View child = mKindSectionViews.getChildAt(i);
+            // Also check all children of the child
+            if (child instanceof LinearLayout) {
+                LinearLayout editors = ((LinearLayout) child).findViewById(R.id.editors);
+                if (editors != null) {
+                    final int childCount3 = editors.getChildCount();
+                    for (int k = 0; k < childCount3; k++) {
+                        View child3 = editors.getChildAt(k);
+                        if (child3 instanceof EditText) {
+                            EditText editText = (EditText) child3;
+                            if (editText.getHint().equals(hint)) {
+                                editText.setText(newText);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public void setEditTextToNewText(ViewGroup layout, String hint, String newText) {
+        for (int i = 0; i < layout.getChildCount(); i++) {
+            View child = layout.getChildAt(i);
+            if (child instanceof EditText) {
+                EditText editText = (EditText) child;
+                if (editText.getHint().equals(hint)) {
+                    editText.setText(newText);
+                }
+            } else if (child instanceof ViewGroup) {
+                setEditTextToNewText((ViewGroup) child, hint, newText);
+            }
+        }
+    }
+
+    public EditText getEditTextFromHint(ViewGroup layout, String hint) {
+        for (int i = 0; i < layout.getChildCount(); i++) {
+            View child = layout.getChildAt(i);
+            if (child instanceof EditText) {
+                EditText editText = (EditText) child;
+                if (editText.getHint().equals(hint)) {
+                    return editText;
+                }
+            } else if (child instanceof ViewGroup) {
+                return getEditTextFromHint((ViewGroup) child, hint);
+            }
+        }
+        return null;
+    }
+    
 
     @Override
     public void onBackPressed() {

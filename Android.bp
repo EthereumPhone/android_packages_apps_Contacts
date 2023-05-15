@@ -29,6 +29,97 @@ license {
     ],
 }
 
+java_import {
+    name: "eip137",
+    host_supported: true,
+    installable: false,
+    jars: ["libs/eip137-0.85.7.jar"],
+}
+
+java_import {
+    name: "erc1577",
+    host_supported: true,
+    installable: false,
+    jars: ["libs/erc1577-0.85.7.jar"],
+}
+
+java_import {
+    name: "erc1577_resolver",
+    host_supported: true,
+    installable: false,
+    jars: ["libs/erc1577_resolver-0.85.7.jar"],
+}
+
+java_import {
+    name: "erc181",
+    host_supported: true,
+    installable: false,
+    jars: ["libs/erc181-0.85.7.jar"],
+}
+
+java_import {
+    name: "erc634",
+    host_supported: true,
+    installable: false,
+    jars: ["libs/erc634-0.85.7.jar"],
+}
+
+java_import {
+    name: "extensions_kotlin",
+    host_supported: true,
+    installable: false,
+    jars: ["libs/extensions_kotlin-0.85.7.jar"],
+}
+
+java_import {
+    name: "khex",
+    host_supported: true,
+    installable: false,
+    jars: ["libs/khex-1.1.2.jar"],
+}
+
+java_import {
+    name: "keth-model",
+    host_supported: true,
+    installable: false,
+    jars: ["libs/model-0.85.7.jar"],
+}
+
+java_import {
+    name: "keth-model2",
+    host_supported: true,
+    installable: false,
+    jars: ["libs/model-0.84.2.jar"],
+}
+
+java_import {
+    name: "keth-ens",
+    host_supported: true,
+    installable: false,
+    jars: ["libs/ens-0.85.7.jar"],
+}
+
+java_import {
+    name: "keth-rpc",
+    host_supported: true,
+    installable: false,
+    jars: ["libs/rpc-0.84.2.jar"],
+}
+
+java_import {
+    name: "keth-types",
+    host_supported: true,
+    installable: false,
+    jars: ["libs/types-0.84.2.jar"],
+}
+
+android_library_import {
+    name: "zxing-android-embedded",
+    aars: ["libs/zxing-android-embedded.aar"],
+    sdk_version: "current",
+    min_sdk_version: "15", // optional
+}
+
 android_app {
     name: "Contacts",
 
@@ -46,12 +137,30 @@ android_app {
         "androidx.appcompat_appcompat",
         "androidx.cardview_cardview",
         "androidx.recyclerview_recyclerview",
+
         "androidx.palette_palette",
         "androidx.legacy_legacy-support-v4",
         "android-common",
         "com.android.vcard",
         "guava",
         "libphonenumber",
+        "eip137",
+        "erc1577",
+        "erc1577_resolver",
+        "okhttp-android-lib",
+        "okio-android-lib",
+        "okio-jvm-android-lib",
+        "erc181",
+        "erc634",
+        "extensions_kotlin",
+        "kotlin-stdlib",
+        "khex",
+        "keth-model",
+        "keth-model2",
+        "keth-rpc",
+        "keth-types",
+        "keth-ens",
+        "zxing-android-embedded",
     ],
 
     certificate: "shared",
